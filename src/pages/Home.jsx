@@ -62,12 +62,12 @@ function Home() {
           {
             title: "Sustainability",
             desc: "Building eco-friendly solutions for a better tomorrow.",
-            video: "YOUR_SUSTAINABILITY_VIDEO_ID",
+            video: "https://www.youtube.com/watch?v=3-FgnVjYJVA",
           },
           {
             title: "Innovation",
             desc: "Bringing fresh ideas with modern technology and design.",
-            video: "YOUR_INNOVATION_VIDEO_ID",
+            video: "https://www.youtube.com/watch?v=Cdn9Q_Qo40E",
           },
           {
             title: "Responsibility",

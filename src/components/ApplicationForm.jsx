@@ -16,8 +16,6 @@ const ApplicationForm = () => {
     project: "",
   });
 
-  const [resumeFile, setResumeFile] = useState(null);
-
   // Pre-fill project if coming from Projects page
   useEffect(() => {
     if (location.state && location.state.project) {
@@ -29,46 +27,36 @@ const ApplicationForm = () => {
   }, [location.state]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!resumeFile) {
-      toast.error("Please upload your resume.");
-      return;
-    }
-
-    const payload = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      payload.append(key, value);
+  try {
+    const res = await fetch("http://localhost:8080/api/apply", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
     });
-    payload.append("resume", resumeFile);
 
-    try {
-      const res = await fetch("http://localhost:8080/api/apply", {
-        method: "POST",
-        body: payload, // Let FormData handle Content-Type
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to submit: ${res.status} ${errorText}`);
-      }
-
-      toast.success("Application submitted successfully!");
-      setFormData({
-        firstName: "",
-        lastName: "",
-        age: "",
-        degree: "",
-        experience: "",
-        email: "",
-        project: "",
-      });
-      setResumeFile(null);
-    } catch (err) {
-      console.error(err);
-      toast.error(err.message || "Internal Server Error");
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Failed to submit: ${res.status} ${errorText}`);
     }
-  };
+
+    toast.success("Application submitted successfully!");
+    setFormData({
+      firstName: "",
+      lastName: "",
+      age: "",
+      degree: "",
+      experience: "",
+      email: "",
+      project: "",
+    });
+  } catch (err) {
+    console.error(err);
+    toast.error(err.message || "Internal Server Error");
+  }
+};
+
 
   return (
     <div className="p-6 max-w-lg mx-auto bg-white rounded shadow">
@@ -139,17 +127,6 @@ const ApplicationForm = () => {
           readOnly
           className="border rounded px-2 py-1 w-full bg-gray-100"
         />
-
-        <div>
-          <label className="block mb-1">Upload Resume (PDF/DOC/DOCX):</label>
-          <input
-            type="file"
-            accept=".pdf,.doc,.docx"
-            onChange={(e) => setResumeFile(e.target.files[0])}
-            className="border rounded px-2 py-1 w-full"
-            required
-          />
-        </div>
 
         <button
           type="submit"
