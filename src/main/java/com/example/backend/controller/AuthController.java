@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = {
+        "http://localhost:3000",
+        "https://lifewood-webs.vercel.app"
+})
 public class AuthController {
 
     @Autowired
@@ -19,32 +22,35 @@ public class AuthController {
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody User user) {
-        if (userRepository.findByEmail(user.getEmail()).isPresent())
+    // 🔹 Signup restricted to ADMIN only
+    @PostMapping("/signup-admin")
+    public ResponseEntity<?> signupAdmin(@RequestBody User user) {
+        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Email already registered");
+        }
 
         user.setPassword(encoder.encode(user.getPassword()));
-        if (user.getRole() != 2) user.setRole(1); // normal user by default
+        user.setRole(2); // 🚨 force ADMIN role always
         return ResponseEntity.ok(userRepository.save(user));
     }
 
+    // 🔹 Login (only admins can access dashboard)
     @PostMapping("/login")
-public ResponseEntity<?> login(@RequestBody User loginUser) {
-    return userRepository.findByEmail(loginUser.getEmail())
-            .map(user -> {
-                if (encoder.matches(loginUser.getPassword(), user.getPassword())) {
+    public ResponseEntity<?> login(@RequestBody User loginUser) {
+        return userRepository.findByEmail(loginUser.getEmail())
+                .map(user -> {
+                    if (encoder.matches(loginUser.getPassword(), user.getPassword())) {
+                        if (user.getRole() != 2) {
+                            return ResponseEntity.status(403).body("Access denied: Not an admin");
+                        }
 
-                    // Convert int role to String
-                    String roleName = (user.getRole() == 2) ? "ADMIN" : "USER";
-                    String token = JwtUtil.generateToken(user.getEmail(), roleName);
-
-                    return ResponseEntity.ok(new LoginResponse(token, user.getEmail(), user.getRole()));
-                } else {
-                    return ResponseEntity.status(401).body("Incorrect password");
-                }
-            })
-            .orElse(ResponseEntity.status(404).body("User not found"));
-}
-
+                        // Role = ADMIN
+                        String token = JwtUtil.generateToken(user.getEmail(), "ADMIN");
+                        return ResponseEntity.ok(new LoginResponse(token, user.getEmail(), user.getRole()));
+                    } else {
+                        return ResponseEntity.status(401).body("Incorrect password");
+                    }
+                })
+                .orElse(ResponseEntity.status(404).body("Admin not found"));
+    }
 }
