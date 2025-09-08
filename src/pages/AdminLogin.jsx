@@ -79,16 +79,13 @@ function AdminLogin() {
           </button>
         </form>
 
-        {/* Footer link */}
-        <p className="text-sm text-center mt-4 text-gray-600">
-          Don’t have an admin account?{" "}
-          <Link
-            to="/signup-admin"
-            className="text-green-600 font-semibold hover:underline"
-          >
-            Create one here
-          </Link>
-        </p>
+        {/* Signup Button */}
+        <button
+          onClick={() => navigate("/signup-admin")}
+          className="w-full mt-4 bg-gray-200 text-gray-700 py-2 rounded-lg hover:bg-gray-300 transition"
+        >
+          Sign Up as Admin
+        </button>
       </div>
     </div>
   );
