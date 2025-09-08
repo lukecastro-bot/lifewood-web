@@ -14,14 +14,15 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // allow all endpoints
+                registry.addMapping("/**")
                         .allowedOrigins(
-                            "http://localhost:3000",           // local dev
-                            "https://lifewood-webs.vercel.app" // deployed frontend
+                                "http://localhost:3000",            // local dev
+                                "https://lifewood-webs.vercel.app"  // deployed frontend
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
-                        .allowCredentials(true); // if you need cookies/session
+                        .exposedHeaders("Authorization", "Content-Type")
+                        .allowCredentials(false); // 🚨 disable if you don’t need cookies
             }
         };
     }
