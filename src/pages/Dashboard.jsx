@@ -24,12 +24,12 @@ const Dashboard = () => {
       const token = localStorage.getItem("token");
       if (!token) return navigate("/admin-login");
 
-      const res = await fetch("http://localhost:8080/api/applications", {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch("https://lifewood-web.onrender.com/api/applications", {
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+  },
+});
 
       if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
       const data = await res.json();
@@ -59,16 +59,16 @@ const Dashboard = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:8080/api/applications/${id}/status`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ status }),
-        }
-      );
+  `https://lifewood-web.onrender.com/api/applications/${id}/status`,
+  {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status }),
+  }
+);
 
       if (!res.ok) throw new Error("Failed to update status");
 
@@ -101,16 +101,16 @@ const Dashboard = () => {
 
     try {
       const res = await fetch(
-        `http://localhost:8080/api/applications/${editingApp}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+  `https://lifewood-web.onrender.com/api/applications/${editingApp}`,
+  {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(formData),
+  }
+);
 
       if (!res.ok) throw new Error("Failed to update application");
 
@@ -259,13 +259,14 @@ const Dashboard = () => {
                     <td className="px-4 py-2 border">
                       {app.resumePath ? (
                         <a
-                          href={`http://localhost:8080/${app.resumePath}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          View Resume
-                        </a>
+  href={`https://lifewood-web.onrender.com/${app.resumePath}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-blue-600 hover:underline"
+>
+  View Resume
+</a>
+
                       ) : (
                         "No Resume"
                       )}

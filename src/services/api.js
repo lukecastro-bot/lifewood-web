@@ -1,8 +1,7 @@
-// src/services/api.js
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:8080/api", // ✅ fixed: added /api
+  baseURL: "https://lifewood-web.onrender.com/api", // ✅ updated base URL
 });
 
 // Get all applications

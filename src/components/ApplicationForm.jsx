@@ -30,11 +30,12 @@ const ApplicationForm = () => {
   e.preventDefault();
 
   try {
-    const res = await fetch("http://localhost:8080/api/apply", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
+    const res = await fetch("https://lifewood-web.onrender.com/api/apply", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(formData),
+});
+
 
     if (!res.ok) {
       const errorText = await res.text();
