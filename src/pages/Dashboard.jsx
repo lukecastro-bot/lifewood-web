@@ -1,4 +1,3 @@
-// Dashboard.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
@@ -7,359 +6,156 @@ import "react-toastify/dist/ReactToastify.css";
 const Dashboard = () => {
   const navigate = useNavigate();
   const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [showModal, setShowModal] = useState(false);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10; // 🔹 show 10 rows per page
 
-  // Editing state
-  const [editingApp, setEditingApp] = useState(null);
-  const [formData, setFormData] = useState({});
-
-  // --- Fetch applications ---
-  const fetchApplications = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return navigate("/admin-login");
-
-      const res = await fetch("https://lifewood-web.onrender.com/api/applications", {
-  headers: {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  },
-});
-
-      if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`);
-      const data = await res.json();
-      setApplications(data);
-    } catch (err) {
-      setError(err.message || "Failed to fetch applications");
-      toast.error("Failed to fetch applications");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Fetch applications
   useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const res = await fetch("https://lifewood-web.onrender.com/api/applications");
+        if (res.ok) {
+          const data = await res.json();
+          setApplications(data);
+        } else {
+          toast.error("Failed to fetch applications");
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error("Error fetching applications");
+      }
+    };
     fetchApplications();
   }, []);
 
-  // --- Logout ---
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/admin-login");
-  };
+  // Filtered applications
+  const filteredApps = applications.filter((app) => {
+    const matchesSearch =
+      app.name.toLowerCase().includes(search.toLowerCase()) ||
+      app.email.toLowerCase().includes(search.toLowerCase());
 
-  // --- Update application status ---
-  const updateStatus = async (id, status) => {
-    const token = localStorage.getItem("token");
-    if (!token) return navigate("/admin-login");
+    const matchesStatus =
+      statusFilter === "all" ? true : app.status === statusFilter;
 
-    try {
-      const res = await fetch(
-  `https://lifewood-web.onrender.com/api/applications/${id}/status`,
-  {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({ status }),
-  }
-);
+    return matchesSearch && matchesStatus;
+  });
 
-      if (!res.ok) throw new Error("Failed to update status");
+  // Pagination
+  const totalPages = Math.ceil(filteredApps.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const currentItems = filteredApps.slice(startIndex, startIndex + itemsPerPage);
 
-      setApplications((prev) => prev.filter((app) => app.id !== id));
-
-      toast.success(
-        status === "ACCEPTED"
-          ? "✅ Application accepted"
-          : "❌ Application declined"
-      );
-    } catch (err) {
-      toast.error("Failed to update status");
-    }
-  };
-
-  // --- Edit Application ---
-  const handleEditClick = (app) => {
-    setEditingApp(app.id);
-    setFormData(app);
-  };
-
-  const handleCancelEdit = () => {
-    setEditingApp(null);
-    setFormData({});
-  };
-
-  const handleSaveEdit = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return navigate("/admin-login");
-
-    try {
-      const res = await fetch(
-  `https://lifewood-web.onrender.com/api/applications/${editingApp}`,
-  {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(formData),
-  }
-);
-
-      if (!res.ok) throw new Error("Failed to update application");
-
-      const updated = await res.json();
-      setApplications((prev) =>
-        prev.map((app) => (app.id === editingApp ? updated : app))
-      );
-
-      toast.success("✅ Application updated");
-      setEditingApp(null);
-      setFormData({});
-    } catch (err) {
-      toast.error("Failed to update application");
-    }
-  };
+  const handlePrev = () => setCurrentPage((p) => Math.max(p - 1, 1));
+  const handleNext = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top bar */}
-      <div className="flex justify-between items-center bg-white shadow px-6 py-4 sticky top-0 z-40">
-        <h1 className="text-xl font-bold text-[#3b7a57]">Admin Dashboard</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="bg-red-500 px-4 py-2 rounded-lg text-white hover:bg-red-600"
+    <div className="min-h-screen bg-gray-50 p-6">
+      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+
+      {/* Search + Filter */}
+      <div className="flex gap-4 mb-4">
+        <input
+          type="text"
+          placeholder="Search by name or email..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="p-2 border rounded-lg flex-1"
+        />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="p-2 border rounded-lg"
         >
-          Logout
-        </button>
+          <option value="all">All</option>
+          <option value="pending">Pending</option>
+          <option value="accepted">Accepted</option>
+          <option value="declined">Declined</option>
+        </select>
       </div>
 
-      {/* Main Content */}
-      <main className="p-6">
-        <h2 className="text-lg font-semibold mb-4">Applicants List</h2>
-
-        {loading && <p>Loading applications...</p>}
-        {error && <p className="text-red-500">{error}</p>}
-
-        {!loading && !error && (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-300 bg-white rounded-lg">
-              <thead>
-                <tr className="bg-gray-200 text-gray-700">
-                  <th className="px-4 py-2 border">ID</th>
-                  <th className="px-4 py-2 border">Name</th>
-                  <th className="px-4 py-2 border">Age</th>
-                  <th className="px-4 py-2 border">Degree</th>
-                  <th className="px-4 py-2 border">Experience</th>
-                  <th className="px-4 py-2 border">Email</th>
-                  <th className="px-4 py-2 border">Project</th>
-                  <th className="px-4 py-2 border">Resume</th> {/* NEW */}
-                  <th className="px-4 py-2 border">Status</th>
-                  <th className="px-4 py-2 border">Actions</th>
+      {/* Applications Table */}
+      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100 text-left">
+              <th className="p-3">Name</th>
+              <th className="p-3">Email</th>
+              <th className="p-3">Status</th>
+              <th className="p-3">Resume</th>
+              <th className="p-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentItems.length > 0 ? (
+              currentItems.map((app) => (
+                <tr key={app.id} className="border-t">
+                  <td className="p-3">{app.name}</td>
+                  <td className="p-3">{app.email}</td>
+                  <td className="p-3 capitalize">{app.status}</td>
+                  <td className="p-3">
+                    <a
+                      href={`https://lifewood-web.onrender.com/api/applications/${app.id}/resume`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-600 hover:underline"
+                    >
+                      View
+                    </a>
+                  </td>
+                  <td className="p-3 space-x-2">
+                    {app.status === "pending" && (
+                      <>
+                        <button className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                          Accept
+                        </button>
+                        <button className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                          Decline
+                        </button>
+                      </>
+                    )}
+                    {(app.status === "accepted" || app.status === "declined") && (
+                      <span className="text-gray-500 italic">Finalized</span>
+                    )}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {applications.map((app) => (
-                  <tr key={app.id} className="text-center">
-                    <td className="px-4 py-2 border">{app.id}</td>
-                    <td className="px-4 py-2 border">
-                      {editingApp === app.id ? (
-                        <input
-                          value={formData.firstName || ""}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              firstName: e.target.value,
-                            })
-                          }
-                          className="border rounded px-2"
-                        />
-                      ) : (
-                        `${app.firstName} ${app.lastName}`
-                      )}
-                    </td>
-                    <td className="px-4 py-2 border">
-                      {editingApp === app.id ? (
-                        <input
-                          value={formData.age || ""}
-                          onChange={(e) =>
-                            setFormData({ ...formData, age: e.target.value })
-                          }
-                          className="border rounded px-2"
-                        />
-                      ) : (
-                        app.age
-                      )}
-                    </td>
-                    <td className="px-4 py-2 border">
-                      {editingApp === app.id ? (
-                        <input
-                          value={formData.degree || ""}
-                          onChange={(e) =>
-                            setFormData({ ...formData, degree: e.target.value })
-                          }
-                          className="border rounded px-2"
-                        />
-                      ) : (
-                        app.degree
-                      )}
-                    </td>
-                    <td className="px-4 py-2 border">
-                      {editingApp === app.id ? (
-                        <input
-                          value={formData.experience || ""}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              experience: e.target.value,
-                            })
-                          }
-                          className="border rounded px-2"
-                        />
-                      ) : (
-                        app.experience
-                      )}
-                    </td>
-                    <td className="px-4 py-2 border">
-                      {editingApp === app.id ? (
-                        <input
-                          value={formData.email || ""}
-                          onChange={(e) =>
-                            setFormData({ ...formData, email: e.target.value })
-                          }
-                          className="border rounded px-2"
-                        />
-                      ) : (
-                        app.email
-                      )}
-                    </td>
-                    <td className="px-4 py-2 border">
-                      {editingApp === app.id ? (
-                        <input
-                          value={formData.project || ""}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              project: e.target.value,
-                            })
-                          }
-                          className="border rounded px-2"
-                        />
-                      ) : (
-                        app.project
-                      )}
-                    </td>
-                    {/* Resume column */}
-                    <td className="px-4 py-2 border">
-                      {app.resumePath ? (
-                        <a
-  href={`https://lifewood-web.onrender.com/${app.resumePath}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="text-blue-600 hover:underline"
->
-  View Resume
-</a>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="p-3 text-center text-gray-500">
+                  No applications found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-                      ) : (
-                        "No Resume"
-                      )}
-                    </td>
-                    <td className="px-4 py-2 border">{app.status}</td>
-                    <td className="px-4 py-2 border space-x-2">
-                      {app.status === "PENDING" && (
-                        <>
-                          {editingApp === app.id ? (
-                            <>
-                              <button
-                                onClick={handleSaveEdit}
-                                className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                              >
-                                Save
-                              </button>
-                              <button
-                                onClick={handleCancelEdit}
-                                className="px-2 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
-                              >
-                                Cancel
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                onClick={() => updateStatus(app.id, "ACCEPTED")}
-                                className="px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-                              >
-                                Accept
-                              </button>
-                              <button
-                                onClick={() => updateStatus(app.id, "DECLINED")}
-                                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                              >
-                                Decline
-                              </button>
-                              <button
-                                onClick={() => handleEditClick(app)}
-                                className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                              >
-                                Edit
-                              </button>
-                            </>
-                          )}
-                        </>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-                {applications.length === 0 && (
-                  <tr>
-                    <td colSpan="10" className="py-4 text-gray-500">
-                      No applications available
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </main>
-
-      {/* Logout Modal */}
-      {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded-2xl shadow-lg p-6 w-96">
-            <h2 className="text-lg font-bold text-gray-800 mb-4">
-              Confirm Logout
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to log out?
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowModal(false)}
-                className="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-between items-center mt-4">
+          <button
+            onClick={handlePrev}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
+          >
+            Previous
+          </button>
+          <span className="text-gray-700">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={handleNext}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-gray-200 rounded-lg disabled:opacity-50"
+          >
+            Next
+          </button>
         </div>
       )}
 
-      {/* Toast container */}
-      <ToastContainer position="top-right" autoClose={2500} hideProgressBar />
+      <ToastContainer />
     </div>
   );
 };
