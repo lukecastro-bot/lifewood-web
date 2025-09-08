@@ -1,4 +1,3 @@
-// src/main/java/com/example/backend/config/CorsConfig.java
 package com.example.backend.config;
 
 import org.springframework.context.annotation.Bean;
@@ -16,13 +15,13 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins(
-                                "http://localhost:3000",            // local dev
-                                "https://lifewood-webs.vercel.app"  // deployed frontend
+                                "http://localhost:3000",             // local dev
+                                "https://lifewood-web.vercel.app"    // ✅ correct deployed frontend
                         )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .exposedHeaders("Authorization", "Content-Type")
-                        .allowCredentials(false); // 🚨 disable if you don’t need cookies
+                        .allowCredentials(true); // allow credentials if you pass cookies or auth headers
             }
         };
     }
