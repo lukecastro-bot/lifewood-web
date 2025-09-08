@@ -1,6 +1,6 @@
 // AdminLogin.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function AdminLogin() {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -10,11 +10,10 @@ function AdminLogin() {
     e.preventDefault();
     try {
       const res = await fetch("https://lifewood-web.onrender.com/api/auth/login", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify(formData),
-});
-
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
       if (res.ok) {
         const data = await res.json();
@@ -30,11 +29,10 @@ function AdminLogin() {
 
         // Optional role check
         if (data.role !== "ADMIN") {
-  alert("Access denied: You are not an admin.");
-  navigate("/admin-login");
-  return;
-}
-
+          alert("Access denied: You are not an admin.");
+          navigate("/admin-login");
+          return;
+        }
 
         alert("Welcome Admin!");
         navigate("/dashboard");
@@ -67,7 +65,9 @@ function AdminLogin() {
             type="password"
             placeholder="Password"
             value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
             className="w-full p-2 border rounded-lg"
             required
           />
@@ -78,6 +78,17 @@ function AdminLogin() {
             Login as Admin
           </button>
         </form>
+
+        {/* Footer link */}
+        <p className="text-sm text-center mt-4 text-gray-600">
+          Don’t have an admin account?{" "}
+          <Link
+            to="/signup-admin"
+            className="text-green-600 font-semibold hover:underline"
+          >
+            Create one here
+          </Link>
+        </p>
       </div>
     </div>
   );
