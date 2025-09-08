@@ -1,8 +1,8 @@
-// src/pages/AdminSignup.jsx
+// src/pages/SignupAdmin.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function AdminSignup() {
+function SignupAdmin() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
@@ -33,7 +33,7 @@ function AdminSignup() {
       }
     } catch (err) {
       console.error(err);
-      alert("Signup failed due to server error");
+      alert("Signup failed");
     }
   };
 
@@ -43,8 +43,8 @@ function AdminSignup() {
         className="bg-white p-8 rounded-xl shadow-md w-full max-w-md space-y-4"
         onSubmit={handleSubmit}
       >
-        <h2 className="text-2xl font-bold text-center mb-4 text-green-600">
-          Admin Signup
+        <h2 className="text-2xl font-bold text-center text-green-600 mb-4">
+          Create Admin Account
         </h2>
         <input
           name="username"
@@ -56,8 +56,8 @@ function AdminSignup() {
         />
         <input
           name="email"
-          type="email"
           placeholder="Email"
+          type="email"
           value={formData.email}
           onChange={handleChange}
           className="border p-2 w-full rounded"
@@ -65,8 +65,8 @@ function AdminSignup() {
         />
         <input
           name="password"
-          type="password"
           placeholder="Password"
+          type="password"
           value={formData.password}
           onChange={handleChange}
           className="border p-2 w-full rounded"
@@ -83,4 +83,4 @@ function AdminSignup() {
   );
 }
 
-export default AdminSignup;
+export default SignupAdmin;
