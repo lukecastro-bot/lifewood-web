@@ -9,28 +9,53 @@ const Dashboard = () => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10; // 🔹 show 10 rows per page
+  const itemsPerPage = 10;
 
-  // Fetch applications
-  useEffect(() => {
-    const fetchApplications = async () => {
-      try {
-        const res = await fetch("https://lifewood-web.onrender.com/api/applications");
-        if (res.ok) {
-          const data = await res.json();
-          setApplications(data);
-        } else {
-          toast.error("Failed to fetch applications");
-        }
-      } catch (err) {
-        console.error(err);
-        toast.error("Error fetching applications");
+  // 🔹 Fetch all applications
+  const fetchApplications = async () => {
+    try {
+      const res = await fetch("https://lifewood-web.onrender.com/api/applications");
+      if (res.ok) {
+        const data = await res.json();
+        setApplications(data);
+      } else {
+        toast.error("Failed to fetch applications");
       }
-    };
+    } catch (err) {
+      console.error(err);
+      toast.error("Error fetching applications");
+    }
+  };
+
+  useEffect(() => {
     fetchApplications();
   }, []);
 
-  // Filtered applications
+  // 🔹 Handle Accept/Decline
+  const updateStatus = async (id, newStatus) => {
+    try {
+      const res = await fetch(
+        `https://lifewood-web.onrender.com/api/applications/${id}/status`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        }
+      );
+
+      if (res.ok) {
+        toast.success(`Application ${newStatus}`);
+        fetchApplications(); // 🔄 Refresh applications after update
+      } else {
+        toast.error("Failed to update status");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error updating status");
+    }
+  };
+
+  // 🔹 Filtering
   const filteredApps = applications.filter((app) => {
     const matchesSearch =
       app.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -42,7 +67,7 @@ const Dashboard = () => {
     return matchesSearch && matchesStatus;
   });
 
-  // Pagination
+  // 🔹 Pagination
   const totalPages = Math.ceil(filteredApps.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentItems = filteredApps.slice(startIndex, startIndex + itemsPerPage);
@@ -107,10 +132,16 @@ const Dashboard = () => {
                   <td className="p-3 space-x-2">
                     {app.status === "pending" && (
                       <>
-                        <button className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                        <button
+                          onClick={() => updateStatus(app.id, "accepted")}
+                          className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                        >
                           Accept
                         </button>
-                        <button className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                        <button
+                          onClick={() => updateStatus(app.id, "declined")}
+                          className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                        >
                           Decline
                         </button>
                       </>
