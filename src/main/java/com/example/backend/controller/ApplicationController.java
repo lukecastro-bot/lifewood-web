@@ -4,19 +4,10 @@ import com.example.backend.entity.Application;
 import com.example.backend.repository.ApplicationRepository;
 import com.example.backend.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,69 +22,28 @@ public class ApplicationController {
     @Autowired
     private EmailService emailService;
 
-    // Upload directory
-    private static final String UPLOAD_DIR = "C:/LifewoodUploads";
-
     // -------------------- SUBMIT APPLICATION --------------------
     @PostMapping("/apply")
-    public ResponseEntity<?> submitApplication(
-            @RequestParam("firstName") String firstName,
-            @RequestParam("lastName") String lastName,
-            @RequestParam("age") int age,
-            @RequestParam("degree") String degree,
-            @RequestParam("experience") String experience,
-            @RequestParam("email") String email,
-            @RequestParam("project") String project,
-            @RequestParam("resume") MultipartFile resume) {
-
+    public ResponseEntity<?> submitApplication(@RequestBody ApplicationRequest request) {
         try {
-            // Ensure upload folder exists
-            File folder = new File(UPLOAD_DIR);
-            if (!folder.exists()) folder.mkdirs();
-
-            // Save file with unique timestamp
-            String filename = System.currentTimeMillis() + "_" + resume.getOriginalFilename();
-            File file = new File(folder, filename);
-            resume.transferTo(file);
-
-            // Save application data to DB
             Application app = new Application();
-            app.setFirstName(firstName);
-            app.setLastName(lastName);
-            app.setAge(age);
-            app.setDegree(degree);
-            app.setExperience(experience);
-            app.setEmail(email);
-            app.setProject(project);
-            app.setResumePath(filename);
+            app.setFirstName(request.getFirstName());
+            app.setLastName(request.getLastName());
+            app.setAge(request.getAge());
+            app.setDegree(request.getDegree());
+            app.setExperience(request.getExperience());
+            app.setEmail(request.getEmail());
+            app.setProject(request.getProject());
             app.setStatus(Application.Status.PENDING);
 
             applicationRepository.save(app);
 
             return ResponseEntity.ok("Application submitted successfully!");
 
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error saving resume: " + e.getMessage());
-        }
-    }
-
-    // -------------------- VIEW RESUME --------------------
-    @GetMapping("/uploads/{filename:.+}")
-    public ResponseEntity<Resource> viewResume(@PathVariable String filename) {
-        try {
-            Path filePath = Paths.get(UPLOAD_DIR).resolve(filename);
-            if (!Files.exists(filePath)) return ResponseEntity.notFound().build();
-
-            Resource resource = new UrlResource(filePath.toUri());
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
-                    .body(resource);
-
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error saving application: " + e.getMessage());
         }
     }
 
@@ -165,5 +115,31 @@ public class ApplicationController {
         private String status;
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
+    }
+
+    // -------------------- APPLICATION REQUEST DTO --------------------
+    public static class ApplicationRequest {
+        private String firstName;
+        private String lastName;
+        private int age;
+        private String degree;
+        private String experience;
+        private String email;
+        private String project;
+
+        public String getFirstName() { return firstName; }
+        public void setFirstName(String firstName) { this.firstName = firstName; }
+        public String getLastName() { return lastName; }
+        public void setLastName(String lastName) { this.lastName = lastName; }
+        public int getAge() { return age; }
+        public void setAge(int age) { this.age = age; }
+        public String getDegree() { return degree; }
+        public void setDegree(String degree) { this.degree = degree; }
+        public String getExperience() { return experience; }
+        public void setExperience(String experience) { this.experience = experience; }
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getProject() { return project; }
+        public void setProject(String project) { this.project = project; }
     }
 }
