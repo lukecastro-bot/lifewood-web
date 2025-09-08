@@ -15,9 +15,13 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") // allow all endpoints
-                        .allowedOrigins("http://localhost:3000") // allow frontend
+                        .allowedOrigins(
+                            "http://localhost:3000",           // local dev
+                            "https://lifewood-webs.vercel.app" // deployed frontend
+                        )
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*");
+                        .allowedHeaders("*")
+                        .allowCredentials(true); // if you need cookies/session
             }
         };
     }
