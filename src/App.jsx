@@ -6,7 +6,7 @@ import Projects from "./pages/Projects.jsx";
 import ApplicationForm from "./components/ApplicationForm.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Success from "./pages/Success.jsx";
-import Signup from "./pages/Signup.jsx";
+import AdminSignup from "./pages/AdminSignup.jsx";
 import Login from "./pages/Login.jsx";
 import AdminLogin from "./pages/AdminLogin.jsx";
 import "./index.css";
@@ -68,7 +68,7 @@ const AppContent = () => {
               <Route path="/projects" element={<Projects />} />
               <Route path="/apply" element={<ApplicationForm />} />
               <Route path="/success" element={<Success />} />
-              <Route path="/signup" element={<Signup />} />
+              <Route path="/signup" element={<AdminSignup />} />
               <Route path="/login" element={<Login />} />
               <Route path="/admin-login" element={<AdminLogin />} />
             </Routes>
