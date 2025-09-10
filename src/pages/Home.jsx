@@ -59,22 +59,23 @@ function Home() {
         className="grid md:grid-cols-3 gap-5 md:gap-6 px-4 md:px-10 py-10 relative z-10"
       >
         {[
-          {
-            title: "Sustainability",
-            desc: "Building eco-friendly solutions for a better tomorrow.",
-            video: "https://www.youtube.com/watch?v=3-FgnVjYJVA",
-          },
-          {
-            title: "Innovation",
-            desc: "Bringing fresh ideas with modern technology and design.",
-            video: "https://www.youtube.com/watch?v=Cdn9Q_Qo40E",
-          },
-          {
-            title: "Responsibility",
-            desc: "Committed to ethical practices and community growth.",
-            video: "YOUR_RESPONSIBILITY_VIDEO_ID",
-          },
-        ].map((feature, idx) => (
+  {
+    title: "Sustainability",
+    desc: "Building eco-friendly solutions for a better tomorrow.",
+    video: "3-FgnVjYJVA", // ID only
+  },
+  {
+    title: "Innovation",
+    desc: "Bringing fresh ideas with modern technology and design.",
+    video: "Cdn9Q_Qo40E",
+  },
+  {
+    title: "Responsibility",
+    desc: "Committed to ethical practices and community growth.",
+    video: "9LjMAJrOirU",
+  },
+]
+        .map((feature, idx) => (
           <div
             key={idx}
             className="bg-white rounded-xl shadow-md p-4 text-center cursor-pointer hover:shadow-lg hover:-translate-y-1 transition transform duration-300 border border-gray-100"
