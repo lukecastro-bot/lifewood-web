@@ -17,12 +17,14 @@ const Navbar = () => {
     <nav className="bg-white shadow-md fixed w-full top-0 z-50">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         {/* Brand */}
-        <Link
-          to="/"
-          className="text-[#3b7a57] font-extrabold text-2xl tracking-wide hover:text-[#ff914d] transition-colors duration-300"
-        >
-          Lifewood
-        </Link>
+        <Link to="/" className="inline-block">
+  <img
+    src="/images/lifewood.png"   // <-- replace with your logo path
+    alt="Lifewood Logo"
+    className="h-12 w-auto object-contain hover:opacity-90 transition-opacity duration-300"
+  />
+</Link>
+
 
         {/* Center Links */}
         <div className="hidden md:flex space-x-8">
